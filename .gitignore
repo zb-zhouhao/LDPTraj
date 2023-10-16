@@ -1,0 +1,9 @@
+/build/
+/build_zh/
+/.idea/
+/cmake-build-bda166/
+/cmake-build-debug/
+/outputs_bckup/
+/ortools/
+.clion.source.upload.marker
+.DS_Store
