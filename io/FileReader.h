@@ -17,7 +17,10 @@ public:
     void close();
     static void split(const string &str, vector<string> &tokens, const string &delim);
     void readParameterFile(map<string, string> &key2value, const string &delim);
-    double readTraj(const string &folderName, const int total, map<int, vector<Triple *>>& trajectories, map<int, vector<int>> &recMap, map<int, double> &sensity_map);
+//    double readTraj(const string &folderName, const int total, map<int, vector<Triple *>>& trajectories, map<int, vector<int>> &recMap, map<int, double> &sensity_map);
+    void readTraj(const string &folderName, map<int, vector<Triple *>>& trajectories);
+    void statsTraj(map<int, vector<Triple *>>& trajectories, map<string, int>& stats_map);
+    void meshTraj(map<int, vector<Triple *>>& trajectories, map<string, int>& stats_map, map<int, double>& sens_map);
 };
 
 #endif //NNGRAM_FILEREADER_H

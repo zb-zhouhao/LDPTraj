@@ -16,20 +16,20 @@ class KeyPointSolver : public Solver {
     map<int, vector<int>> topCKeyPointsMap;
     double threshold;
     bool perturbTime;
-    int sampleRate;
+    double sampleRate;
     int numOfKeyPoint;
     bool useExpMech;
 
 public:
     KeyPointSolver(double eps, bool is_out, string output_path, map<int, vector<Triple *>> &trajs_data,
-                   map<int, double> &sens_map, int theta, bool use_exp_mech = true);
+                   map<int, double> &sens_map, int theta, map<string, int>& stats_map, bool use_exp_mech = true, string parameters_str = "");
     void calKey(vector<Triple *> &traj, vector<double> &keyVec);
     void chooseTopCPoints(vector<int> &topCVec, vector<Triple *> &traj, vector<double> &keyVec);
     void randomizeOneKeyPoint(int keyId, vector<Triple *> &kpRet, vector<Triple *> &traj);
     void randomizeKeyPointsSeq(vector<int> &topCVec, vector<Triple *> &traj, vector<Triple *> &kpRet);
-    void genTrajectory(vector<Triple *> &rTraj, vector<Triple *> &kpRet, int sample_rate);
+    void genTrajectory(vector<Triple *> &rTraj, vector<Triple *> &kpRet, double sample_rate);
     void solve() override;
-    void setNumOfPoint(int traj_len);
+    void setNumOfKeyPoint(int traj_len);
     void expSolve(vector<int> &topCVec, vector<Triple *> &traj, vector<Triple *> &kpRet);
     void geoISolve(vector<int> &topCVec, vector<Triple *> &traj, vector<Triple *> &kpRet);
 };

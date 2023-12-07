@@ -1,0 +1,49 @@
+# param file
+# DATASET_PATH = /home/zhouhao/dataset/dataset_geolife_bj/
+DATASET_PATH = /home/zhouhao/dataset/dataset_jyj/
+# DATASET_PATH = /home/zhouhao/dataset/test/
+
+# OUTPUT_PATH = /home/zhouhao/CLionProjects/NNGram/cmake-build-debug/outputs/
+OUTPUT_PATH = /home/zhouhao/CLionProjects/NNGram/cmake-build-bda166/outputs/jyj/
+
+# DATA_TOTAL = 13595
+DATA_TOTAL = 12475
+# DATA_TOTAL = 10
+
+# 50, 100, 500, 1000, 5000
+NUM_INDEX = 50
+# NUM_INDEX = 100
+# NUM_INDEX = 500
+# NUM_INDEX = 1000
+# NUM_INDEX = 5000
+
+IS_OUT = true
+
+# 0.1,0.2,0.25,0.5,1,2,2.5,5,10
+
+EPSILON = 1
+# EPSILON_V = 0.01,0.1,1,5,10
+# EPSILON_V = 0.1,1,5,10
+# EPSILON_V = 0.01
+
+ROUND_TOTAL = 1
+
+
+
+# kp solver
+# km/h
+# THETA = 4
+# THETA = 8
+# THETA = 12
+# THETA = 16
+# THETA = 20
+
+# taxi
+THETA = 8
+THETA_V = 4,8,12,16,20
+
+
+# runType
+RUN_TYPE = 1
+# RUN_TYPE = 2
+# RUN_TYPE = 3

@@ -6,7 +6,7 @@
 
 
 GeoISolver::GeoISolver(double eps, bool is_out, string output_path, map<int, vector<Triple *>> &trajs_data,
-                       map<int, double> &sens_map, int theta) : Solver(eps, is_out, output_path, trajs_data, sens_map, theta
+                       map<int, double> &sens_map, int theta, string parameters_str, map<string, int>& stats_map) : Solver(eps, is_out, output_path, trajs_data, sens_map, theta, parameters_str, stats_map
 ) {
     this->perturbTime = false;
 }

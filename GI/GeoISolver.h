@@ -14,7 +14,7 @@ class GeoISolver: public Solver {
     bool perturbTime;
 public:
     GeoISolver(double eps, bool is_out, string output_path, map<int, vector<Triple *>> &trajs_data,
-               map<int, double> &sens_map, int theta);
+               map<int, double> &sens_map, int theta, string parameters_str, map<string, int>& stats_map);
     void solve() override;
 };
 

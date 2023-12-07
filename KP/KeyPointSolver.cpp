@@ -5,8 +5,8 @@
 #include "KeyPointSolver.h"
 
 KeyPointSolver::KeyPointSolver(double eps, bool is_out, string output_path, map<int, vector<Triple *>> &trajs_data,
-                               map<int, double> &sens_map, int theta, bool use_exp_mech): Solver(eps, is_out, output_path, trajs_data,
-                                                                               sens_map, theta) {
+                               map<int, double> &sens_map, int theta, map<string, int>& stats_map, bool use_exp_mech, string parameters_str): Solver(eps, is_out, output_path, trajs_data,
+                                                                               sens_map, theta, parameters_str, stats_map) {
     this->numOfKeyPointRate = Util::KEY_RATE;
     this->threshold = Util::THRESHOLD;
     this->perturbTime = false;
@@ -52,9 +52,10 @@ void KeyPointSolver::randomizeOneKeyPoint(int keyId, vector<Triple *> &kpRet, ve
 
     int dis = - (4 * sensMap[keyId] * numOfKeyPoint * log(threshold)) / totalEpsilon;
     int left = Util::maxx(traj[keyId]->X - dis, 0);
-    int right = traj[keyId]->X + dis;
-    int up = traj[keyId]->Y + dis;
+    int right = Util::minn(traj[keyId]->X + dis, 29);
+    int up = Util::minn(traj[keyId]->Y + dis, 29);
     int bot = Util::maxx(traj[keyId]->Y - dis, 0);
+
     for (int i = bot; i <= up; i++) {
         for (int j = left; j <= right; j++) {
             long newT = traj[keyId]->time;
@@ -75,6 +76,7 @@ void KeyPointSolver::randomizeOneKeyPoint(int keyId, vector<Triple *> &kpRet, ve
 }
 
 void KeyPointSolver::randomizeKeyPointsSeq(vector<int> &topCVec, vector<Triple *> &traj, vector<Triple *> &kpRet) {
+//    cout << "start randomizeKeyPointsSeq" << endl;
     bool fst = true;
     int preId = -1;
 
@@ -92,9 +94,10 @@ void KeyPointSolver::randomizeKeyPointsSeq(vector<int> &topCVec, vector<Triple *
 
             int dis = - (4 * sensMap[kid] * numOfKeyPoint * log(threshold)) / totalEpsilon;
             int left = Util::maxx(traj[kid]->X - dis, 0);
-            int right = traj[kid]->X + dis;
-            int up = traj[kid]->Y + dis;
+            int right = Util::minn(traj[kid]->X + dis, 29);
+            int up = Util::minn(traj[kid]->Y + dis, 29);
             int bot = Util::maxx(traj[kid]->Y - dis, 0);
+
             for (int i = bot; i <= up; i++) {
                 for (int j = left; j <= right; j++) {
                     long newT = traj[kid]->time;
@@ -125,10 +128,11 @@ void KeyPointSolver::randomizeKeyPointsSeq(vector<int> &topCVec, vector<Triple *
             }
         }
     }
+//    cout << "end randomizeKeyPointsSeq" << endl;
 
 }
 
-void KeyPointSolver::genTrajectory(vector<Triple *> &rTraj, vector<Triple *> &kpRet, int sample_rate) {
+void KeyPointSolver::genTrajectory(vector<Triple *> &rTraj, vector<Triple *> &kpRet, double sample_rate) {
     bool insert = true;
 //    bool insert = false;
     for (int k = 0; k < numOfKeyPoint; k++) {
@@ -154,7 +158,7 @@ void KeyPointSolver::genTrajectory(vector<Triple *> &rTraj, vector<Triple *> &kp
 void KeyPointSolver::solve() {
     auto it = this->trajsData.begin();
     double consumeTime = 0;
-    double dtw = 0;
+    double dtw = 0; double lr = 0.0;
     this->solveLog.append(Util::getCurTime() + "[INFO] begin randomized trajectories\n");
 
     int cnt = 0;
@@ -165,8 +169,9 @@ void KeyPointSolver::solve() {
         auto start = chrono::high_resolution_clock::now();
         //test 轨迹长度为关键点数目
         int trajLen = it->second.size();
+
+        this->setNumOfKeyPoint(trajLen);
         assert(trajLen >= this->numOfKeyPoint);
-        this->setNumOfPoint(trajLen);
         //step 1:cal key of each point
         vector<double> kv(trajLen, 0);
         calKey(it->second, kv);
@@ -185,6 +190,7 @@ void KeyPointSolver::solve() {
         //step3: randomize top c key point
         //privacy_budget: totalEpsilon / 2
 //        randomizeKeyPointsSeq(topCVec, it->second, shuffleTopCVec);
+
         if (this->useExpMech) {
             expSolve(topCVec, it->second, shuffleTopCVec);
         } else {
@@ -199,30 +205,38 @@ void KeyPointSolver::solve() {
 
         //step4: traj reconstruct
         vector<Triple *> rTraj; //save gen traj
+//        cout << "raw len: " + to_string(it->second.size()) << endl;
+//        cout << "len before gen: " + to_string(numOfKeyPoint) << endl;
         genTrajectory(rTraj, shuffleTopCVec, this->sampleRate);
-
+//        cout << "len after gen: " << to_string(rTraj.size()) << endl;
         auto end = chrono::high_resolution_clock::now();
         consumeTime += (double) (chrono::duration_cast<chrono::milliseconds>(end - start).count());
-        dtw += Util::getDTWMetricSingle(it->second, rTraj);
-        vector<vector<int>> rt;
-        Util::rangeQuery(rTraj, it->second, rt);
-        for (int ii = 0; ii < Util::queryNum; ii++) {
-            mqeV[ii][0] += rt[ii][0];
-            mqeV[ii][1] += rt[ii][1];
-        }
+//        dtw += Util::getDTWMetricSingle(it->second, rTraj);
+//        vector<vector<int>> rt;
+//        Util::rangeQuery(rTraj, it->second, rt);
+//        for (int ii = 0; ii < Util::queryNum; ii++) {
+//            mqeV[ii][0] += rt[ii][0];
+//            mqeV[ii][1] += rt[ii][1];
+//        }
+        lr += it->second.size() / rTraj.size();
+
+
         saveTraj(rTraj, it->first);
         it++;
         cnt++;
+
+//        cout << it->first << " " << cnt << endl;
     }
     this->solveLog.append(Util::getCurTime() + "[INFO] 算法运行时间: " + to_string(consumeTime / cnt) + " ms\n");
     this->solveLog.append(Util::getCurTime() + "[INFO] finish randomized trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] start MQE algorithm to metric similarity between trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] finish MQE algorithm, MQE value is :" + to_string(Util::calMQE(mqeV)) + "\n");
+    this->solveLog.append(Util::getCurTime() + "[INFO] finish LR algorithm, LR value is :" + to_string(lr / cnt) + "\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] start MQE algorithm to metric similarity between trajectories\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] finish MQE algorithm, MQE value is :" + to_string(Util::calMQE(mqeV)) + "\n");
 }
 
-void KeyPointSolver::setNumOfPoint(int traj_len) {
+void KeyPointSolver::setNumOfKeyPoint(int traj_len) {
     this->numOfKeyPoint = traj_len * numOfKeyPointRate;
 }
 

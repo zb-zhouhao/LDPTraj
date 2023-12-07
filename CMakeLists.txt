@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(NNGram)
 set(CMAKE_CXX_STANDARD_LIBRARIES "-lstdc++")
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 
 # 如果想要生成的可执行文件拥有符号表，可以gdb调试，就直接加上这句

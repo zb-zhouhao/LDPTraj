@@ -40,7 +40,7 @@ void LogFile::addContent(string &content, bool screenPrint) {
 }
 
 string LogFile::getLogFileName(const string &outputFolder, const string &parametersStr, const string &LDPMethod) {
-    string logFilepath = outputFolder + "logs/log_" + parametersStr + "_" + LDPMethod;
-    logFilepath.append(".txt");
+    string logFilepath = outputFolder + LDPMethod + "/" + "logs/log_" + parametersStr;
+    logFilepath.append(".log");
     return logFilepath;
 }

@@ -21,6 +21,8 @@ public:
     vector<int> thetaVec;
     double numOfKeyPointRate;
     int runType;
+    string epsStr;
+    vector<int> splitIndex;
 
     Parameters();
     string readParametersFromFile(const string &filename);

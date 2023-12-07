@@ -6,7 +6,7 @@
 
 
 ExpMechSolver::ExpMechSolver(double eps, bool is_out, string output_path, map<int, vector<Triple *>> &trajs_data,
-                             map<int, double> &sens_map, int theta): Solver(eps, is_out, output_path, trajs_data, sens_map, theta) {
+                             map<int, double> &sens_map, int theta, string parameters_str, map<string, int>& stats_map): Solver(eps, is_out, output_path, trajs_data, sens_map, theta, parameters_str, stats_map) {
     this->threshold = 0.0;
     this->perturbTime = false;
 }
@@ -83,21 +83,25 @@ void ExpMechSolver::solve() {
         }
         auto end = chrono::high_resolution_clock::now();
         consumeTime += (double)(chrono::duration_cast<chrono::milliseconds>(end - start).count());
-        dtw += Util::getDTWMetricSingle(it->second, rTraj);
-        vector<vector<int>> rt;
-        Util::rangeQuery(rTraj, it->second, rt);
-        for (int ii = 0; ii < Util::queryNum; ii++) {
-            mqeV[ii][0] += rt[ii][0];
-            mqeV[ii][1] += rt[ii][1];
-        }
+//        double dtw_single =  Util::getDTWMetricSingle(it->second, rTraj);
+//        cout << "id:" << it->first << " dtw_single: " << dtw_single << endl;
+//        dtw += dtw_single;
+//        vector<vector<int>> rt;
+//        Util::rangeQuery(rTraj, it->second, rt);
+//        for (int ii = 0; ii < Util::queryNum; ii++) {
+//            mqeV[ii][0] += rt[ii][0];
+//            mqeV[ii][1] += rt[ii][1];
+//        }
         saveTraj(rTraj, it->first);
         it++;
         cnt++;
+
     }
     this->solveLog.append(Util::getCurTime() + "[INFO] 算法运行时间: " + to_string(consumeTime / cnt) + " ms\n");
     this->solveLog.append(Util::getCurTime() + "[INFO] finish randomized trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] start MQE algorithm to metric similarity between trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] finish MQE algorithm, MQE value is :" + to_string(Util::calMQE(mqeV)) + "\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
+//////    cout << cnt << endl;
+//    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] start MQE algorithm to metric similarity between trajectories\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] finish MQE algorithm, MQE value is :" + to_string(Util::calMQE(mqeV)) + "\n");
 }

@@ -14,6 +14,7 @@ Parameters::Parameters() {
     this->theta = 0;
     this->runType = 0;
     this->numOfKeyPointRate = 0.0;
+    this->epsStr = "";
 }
 
 char *getCurrDirectory() {
@@ -56,6 +57,7 @@ string Parameters::readParametersFromFile(const string &filename) {
         }
         else if (pair.first == "EPSILON") {
             epsilon = stod(pair.second);
+            epsStr = pair.second;
         }
         else if (pair.first == "EPSILON_V") {
             vector<string> tmp;
@@ -82,6 +84,13 @@ string Parameters::readParametersFromFile(const string &filename) {
         }
         else if (pair.first == "RUN_TYPE") {
             runType  = stoi(pair.second);
+        }
+        else if (pair.first == "SPLIT_INDEX") {
+            vector<string> tmp;
+            FileReader::split(pair.second, tmp, ",");
+            for (const string &v: tmp) {
+                splitIndex.emplace_back(stoi(v));
+            }
         }
     }
     return printOut(key2value);

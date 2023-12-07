@@ -9,13 +9,13 @@ using namespace std;
 
 class FileWriter {
 public:
-    static bool outputTrip(const string& filename, vector<Triple *> &traj){
+    static bool outputTrip(const string& filename, vector<Triple *> &traj, map<string, int>& stats_map){
         ofstream outfile;
         outfile.open(filename);
         if (outfile.is_open()) {
             stringstream ss;
             for (auto &tri : traj) {
-                ss << to_string(tri->X) << ", " << to_string(tri->Y) << ", " << Util::Stamp2Time(tri->time) << "\n";
+                ss << to_string(tri->X * stats_map["x_width"]) << ", " << to_string(tri->Y * stats_map["y_width"]) << ", " << Util::Stamp2Time(tri->time) << "\n";
             }
             if(ss.good()){
                 outfile << ss.str();

@@ -19,6 +19,8 @@
 #include <set>
 #include "assert.h"
 #include "cmath"
+#include <sys/stat.h>
+#include <filesystem>
 
 #include "ortools/linear_solver/linear_solver.h"
 #include "boost/math/special_functions/lambert_w.hpp"
@@ -29,6 +31,7 @@
 
 
 using namespace std;
+namespace fs = std::filesystem;
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 typedef bg::model::point<int, 2, bg::cs::cartesian> point;
@@ -56,12 +59,15 @@ public:
     static constexpr bool testing = false;
     static constexpr int testCnt = 10;
 
+    //自适应读入
     static constexpr int GRID_SZ = 30;
-//    static constexpr int MAX_X = 34318, MAX_Y = 34318;
-    static constexpr int MAX_X = 276457, MAX_Y = 276457;
-    static constexpr int X_WIDTH = (MAX_X / GRID_SZ) + 1, Y_WIDTH  = (MAX_Y / GRID_SZ) + 1;
+    static constexpr int X_WIDTH = 1;
+    static constexpr int Y_WIDTH = 1;
+
     static constexpr int V = 8; //km/h
-    static constexpr double VELOCITY = (V / 3.6) / (double)X_WIDTH;
+    static constexpr double VELOCITY = (V / 3.6);
+
+
     static constexpr int xBegin = 0, yBegin = 0, xEnd = GRID_SZ, yEnd = GRID_SZ;
     static constexpr int xLength = xEnd - xBegin, yLength = yEnd - yBegin;
     static constexpr int region_size = xLength * yLength;
@@ -70,8 +76,10 @@ public:
     static constexpr double SCAL_FAC = (1.0 / 60);  //km/min
     static constexpr double KEY_RATE = 0.3;
     static constexpr double THRESHOLD = 0.99;
-    static constexpr int SAMPLE_RATE = 5;
-
+//    static constexpr int SAMPLE_SEED = ;
+//    static constexpr int SAMPLE_RATE = 5 * KEY_RATE * ;
+//    static constexpr int SAMPLE_RATE = 5;
+    static constexpr double SAMPLE_RATE = 0.2; // 2/3 * 0.3 40s
     struct Point {
         int x, y;
         int index;
@@ -107,8 +115,6 @@ public:
             return pointDis(p1, b.p1) + pointDis(p2, b.p2);
         }
     };
-
-
 
     static string Stamp2Time(long timestamp) {
         time_t tick = (time_t) timestamp;
@@ -187,7 +193,7 @@ public:
             DTW[0][0] = 0;
             for (int i = 1; i <= n; i++) {
                 for (int j = 1; j <= m; j++) {
-                    double cost = D[i-1][j-1];
+                    double cost = D[i][j];
                     DTW[i][j] = cost + min({DTW[i-1][j], DTW[i][j-1], DTW[i-1][j-1]});
                 }
             }
@@ -201,22 +207,22 @@ public:
         double ret = 0;
         int n = tra1.size(), m = tra2.size();
         vector<vector<double>> D(n, vector<double>(m, 0));
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                D[i][j] = Triple::getPhysicDis(tra1[i], tra2[j]);
-            }
+        D[0][0] = Triple::getPhysicDis(tra1[0], tra2[0]);
+
+        for (int i = 1; i < n; i++) {
+            D[i][0] = D[i-1][0] +  Triple::getPhysicDis(tra1[i], tra2[0]);
         }
 
-        vector<vector<double>> DTW(n+1, vector<double>(m+1, numeric_limits<double>::infinity()));
-        DTW[0][0] = 0;
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j <= m; j++) {
-                double cost = D[i-1][j-1];
-                DTW[i][j] = cost + min({DTW[i-1][j], DTW[i][j-1], DTW[i-1][j-1]});
+        for (int j = 1; j < m; j++) {
+            D[0][j] = D[0][j-1] +  Triple::getPhysicDis(tra1[0], tra2[j]);
+        }
+
+        for (int i = 1; i < n; i++) {
+            for (int j = 1; j < m; j++) {
+                D[i][j] = Triple::getPhysicDis(tra1[i], tra2[j]) + min({D[i-1][j], D[i][j-1], D[i-1][j-1]});
             }
         }
-        ret += DTW[n][m];
-        return ret;
+        return D[n-1][m-1];
     }
 
     //input is vec
@@ -303,6 +309,10 @@ public:
 
     static long maxx(long l1, long l2) {
         return l1 < l2 ? l2 : l1;
+    }
+
+    static long minn(long l1, long l2) {
+        return l1 < l2 ? l1 : l2;
     }
 
     static long laplace(long oriTime, long sensity, double epsilon) {
@@ -399,6 +409,18 @@ public:
         }
         cout << "] " << static_cast<int>(percentage * 100.0) << "%\r";
         cout.flush();
+    }
+
+    static bool CreateDirectoryIfNotExists(const std::string& directoryPath) {
+        int status = mkdir(directoryPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+        if (status == 0) {
+            return true; // 目录创建成功
+        } else if (errno == EEXIST) {
+            return true; // 目录已存在
+        } else {
+            return false; // 目录创建失败
+        }
     }
 };
 

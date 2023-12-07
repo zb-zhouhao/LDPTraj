@@ -5,7 +5,7 @@
 #include "NGramSolver.h"
 
 NGramSolver::NGramSolver(double eps, bool is_out, string output_path, map<int, vector<Triple *>> &trajs_data,
-                         map<int, double> &sens_map, int theta) : Solver(eps, is_out, output_path, trajs_data, sens_map, theta) {
+                         map<int, double> &sens_map, int theta, string parameters_str, map<string, int>& stats_map) : Solver(eps, is_out, output_path, trajs_data, sens_map, theta, parameters_str, stats_map) {
     initPointBigrams();
 }
 
@@ -96,12 +96,10 @@ void NGramSolver::initTrajBigrams(int i) {
 }
 
 int NGramSolver::connect(Util::Bigram &b1, Util::Bigram &b2) {
-
     if (b1.p2.index == b2.p1.index) {
         return 2;
     }
     return 1;
-
 }
 
 int NGramSolver::countConnectConstrainNum() {
@@ -237,8 +235,8 @@ void NGramSolver::solve() {
         auto end = chrono::high_resolution_clock::now();
         consumeTime += (double) (chrono::duration_cast<chrono::milliseconds>(end - start).count());
 
-        dtw += Util::getDTWMetricSingle(oriTraj, rTraj);
-        cout << "gen user " << it->first << " randomized traj" << endl;
+//        dtw += Util::getDTWMetricSingle(oriTraj, rTraj);
+//        cout << "gen user " << it->first << " randomized traj" << endl;
         saveTraj(rTraj, it->first);
         it++;
         cnt++;
@@ -248,7 +246,7 @@ void NGramSolver::solve() {
     this->solveLog.append(Util::getCurTime() + "[INFO] 算法运行时间: " + to_string(consumeTime / cnt) + " ms\n");
     cout << "算法运行时间: " + to_string(consumeTime / cnt) + " ms\n";
     this->solveLog.append(Util::getCurTime() + "[INFO] finish randomized trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
-    cout << "finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n";
+//    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
+//    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
+//    cout << "finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n";
 }
