@@ -15,7 +15,7 @@ public:
         if (outfile.is_open()) {
             stringstream ss;
             for (auto &tri : traj) {
-                ss << to_string(tri->X * stats_map["x_width"]) << ", " << to_string(tri->Y * stats_map["y_width"]) << ", " << Util::Stamp2Time(tri->time) << "\n";
+                ss << to_string(tri->X * stats_map["x_width"] + stats_map["min_x"]) << ", " << to_string(tri->Y * stats_map["y_width"] + stats_map["min_y"]) << ", " << Util::Stamp2Time(tri->time) << "\n";
             }
             if(ss.good()){
                 outfile << ss.str();

@@ -158,13 +158,16 @@ void FileReader::meshTraj(map<int, vector<Triple *>> &trajectories, map<string, 
     for (auto it = trajectories.begin(); it != trajectories.end(); it++) {
         long maxX = -1, minX = LONG_MAX, maxY = -1, minY = LONG_MAX;
         for (Triple* tr : it->second) {
+//            cout << tr->X << " " << tr->Y << endl;
             tr->X = (tr->X - stats_map["min_x"]) / stats_map["x_width"];
             tr->Y = (tr->Y - stats_map["min_y"]) / stats_map["y_width"];
+//            cout << tr->X << " " << tr->Y << endl;
             minX = minX < tr->X ? minX : tr->X;
             maxX = maxX > tr->X ? maxX : tr->X;
             minY = minY < tr->Y ? minY : tr->Y;
             maxY = maxY > tr->Y ? maxY : tr->Y;
         }
+//        exit(0);
         sens_map[it->first] =  sqrt((double)(pow(maxX - minX, 2) + pow(maxY - minY, 2)));
     }
 }

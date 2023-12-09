@@ -14,7 +14,7 @@ GeoISolver::GeoISolver(double eps, bool is_out, string output_path, map<int, vec
 void GeoISolver::solve() {
     auto it = this->trajsData.begin();
     double consumeTime = 0;
-    double dtw = 0;
+    double lr = 0.0;
 
     this->solveLog.append(Util::getCurTime() + "[INFO] begin randomized trajectories\n");
 
@@ -44,8 +44,9 @@ void GeoISolver::solve() {
 
         auto end = chrono::high_resolution_clock::now();
         consumeTime += (double) (chrono::duration_cast<chrono::milliseconds>(end - start).count());
-        dtw += Util::getDTWMetricSingle(it->second, rTraj);
-        cout << "gen user " << it->first << " randomized traj" << endl;
+
+        lr += it->second.size() / rTraj.size();
+
         saveTraj(rTraj, it->first);
         it++;
         cnt++;
@@ -53,9 +54,8 @@ void GeoISolver::solve() {
     }
 
     this->solveLog.append(Util::getCurTime() + "[INFO] 算法运行时间: " + to_string(consumeTime / cnt) + " ms\n");
+    this->solveLog.append(Util::getCurTime() + "[INFO] metric LR: " + to_string(lr / cnt) + "\n");
     this->solveLog.append(Util::getCurTime() + "[INFO] finish randomized trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
 }
 
 

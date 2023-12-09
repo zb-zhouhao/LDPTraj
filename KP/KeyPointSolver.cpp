@@ -158,11 +158,11 @@ void KeyPointSolver::genTrajectory(vector<Triple *> &rTraj, vector<Triple *> &kp
 void KeyPointSolver::solve() {
     auto it = this->trajsData.begin();
     double consumeTime = 0;
-    double dtw = 0; double lr = 0.0;
+    double lr = 0.0;
     this->solveLog.append(Util::getCurTime() + "[INFO] begin randomized trajectories\n");
 
     int cnt = 0;
-    vector<vector<int>> mqeV(Util::queryNum, vector<int>(2, 0));
+
     while (it != this->trajsData.end()) {
         if (Util::testing && cnt == Util::testCnt) { break; }
 
@@ -211,13 +211,6 @@ void KeyPointSolver::solve() {
 //        cout << "len after gen: " << to_string(rTraj.size()) << endl;
         auto end = chrono::high_resolution_clock::now();
         consumeTime += (double) (chrono::duration_cast<chrono::milliseconds>(end - start).count());
-//        dtw += Util::getDTWMetricSingle(it->second, rTraj);
-//        vector<vector<int>> rt;
-//        Util::rangeQuery(rTraj, it->second, rt);
-//        for (int ii = 0; ii < Util::queryNum; ii++) {
-//            mqeV[ii][0] += rt[ii][0];
-//            mqeV[ii][1] += rt[ii][1];
-//        }
         lr += it->second.size() / rTraj.size();
 
 
@@ -228,12 +221,9 @@ void KeyPointSolver::solve() {
 //        cout << it->first << " " << cnt << endl;
     }
     this->solveLog.append(Util::getCurTime() + "[INFO] 算法运行时间: " + to_string(consumeTime / cnt) + " ms\n");
+    this->solveLog.append(Util::getCurTime() + "[INFO] metric LR: " + to_string(lr / cnt) + "\n");
     this->solveLog.append(Util::getCurTime() + "[INFO] finish randomized trajectories\n");
-    this->solveLog.append(Util::getCurTime() + "[INFO] finish LR algorithm, LR value is :" + to_string(lr / cnt) + "\n");
-//    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
-//    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
-//    this->solveLog.append(Util::getCurTime() + "[INFO] start MQE algorithm to metric similarity between trajectories\n");
-//    this->solveLog.append(Util::getCurTime() + "[INFO] finish MQE algorithm, MQE value is :" + to_string(Util::calMQE(mqeV)) + "\n");
+
 }
 
 void KeyPointSolver::setNumOfKeyPoint(int traj_len) {

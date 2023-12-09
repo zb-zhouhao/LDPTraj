@@ -165,66 +165,6 @@ public:
         return ss.str();
     }
 
-    //DTW algorithm
-    static double getDTWMetric(const map<int, vector<Triple*>> &tra1, const map<int, vector<Triple*>> &tra2) {
-//        auto a = tra1.at
-        double ret = 0;
-
-        for (auto it1 = tra1.begin(); it1 != tra1.end(); it1++) {
-            int id = it1->first;
-//            assert(tra2.find(id) != tra2.end());
-            if(tra2.find(id) == tra2.end()) { continue; }
-
-            int n = it1->second.size(), m = tra2.at(id).size();
-            vector<vector<double>> D(n, vector<double>(m, 0));
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-
-
-                    D[i][j] = Triple::getPhysicDis(it1->second[i], tra2.at(id)[j]);
-//                    if (j == i) {
-//                        cout << "dis(" << i << ", " << j << "): " << D[i][j] << " | ";
-//                    }
-                }
-            }
-//            cout << endl;
-
-            vector<vector<double>> DTW(n+1, vector<double>(m+1, numeric_limits<double>::infinity()));
-            DTW[0][0] = 0;
-            for (int i = 1; i <= n; i++) {
-                for (int j = 1; j <= m; j++) {
-                    double cost = D[i][j];
-                    DTW[i][j] = cost + min({DTW[i-1][j], DTW[i][j-1], DTW[i-1][j-1]});
-                }
-            }
-            ret += DTW[n][m];
-        }
-
-        return ret / (double)tra2.size();
-    }
-
-    static double getDTWMetricSingle(const vector<Triple*> &tra1, vector<Triple*> &tra2) {
-        double ret = 0;
-        int n = tra1.size(), m = tra2.size();
-        vector<vector<double>> D(n, vector<double>(m, 0));
-        D[0][0] = Triple::getPhysicDis(tra1[0], tra2[0]);
-
-        for (int i = 1; i < n; i++) {
-            D[i][0] = D[i-1][0] +  Triple::getPhysicDis(tra1[i], tra2[0]);
-        }
-
-        for (int j = 1; j < m; j++) {
-            D[0][j] = D[0][j-1] +  Triple::getPhysicDis(tra1[0], tra2[j]);
-        }
-
-        for (int i = 1; i < n; i++) {
-            for (int j = 1; j < m; j++) {
-                D[i][j] = Triple::getPhysicDis(tra1[i], tra2[j]) + min({D[i-1][j], D[i][j-1], D[i-1][j-1]});
-            }
-        }
-        return D[n-1][m-1];
-    }
-
     //input is vec
     static double getDotProduct(const Triple* v1, const Triple* v2) {
         return v1->X * v2->X + v1->Y * v2->Y;
@@ -325,65 +265,6 @@ public:
         double noise = -scale * std::copysign(1.0, u) * std::log(1 - 2 * std::abs(u));
 //        cout << noise / 60.0 << endl;
         return (long)(oriTime + (noise / 60.0));
-    }
-
-
-    static constexpr int queryNum = 10;
-    static constexpr int queryMatrix[queryNum][4] = {
-        {9, 12, 9, 12},
-        {9, 12, 13, 16},
-        {9, 12, 17, 20},
-        {13, 16, 9, 12},
-        {13, 16, 13, 16},
-        {13, 16, 17, 20},
-        {17, 20, 9, 12},
-        {17, 20, 13, 16},
-        {17, 20, 17, 20},
-        {13, 16, 1, 5}
-    };
-
-//    static constexpr int qX1 = xLength / 2 - 2;
-//    static constexpr int qX2 = xLength / 2 + 1;
-//    static constexpr int qY1 = yLength / 2 - 2;
-//    static constexpr int qY2 = yLength / 2 + 1;
-//    static constexpr char *qTime1 = "1970-01-01 00:00:00";
-//    static constexpr char *qTime2 = "1970-01-01 00:00:00";
-
-    static void rangeQuery(vector<Triple *> &tra1, vector<Triple *> &tra2, vector<vector<int>> &ret) {
-        int n = tra1.size(), m = tra2.size();
-        int perturb = 0; int exact = 0;
-//        long t1 = timestr_timestamp(qTime1); long t2 = timestr_timestamp(qTime2);
-        long t1 = tra2[0]->time; long t2 = tra2[m-1]->time;
-        for (int i = 0; i < Util::queryNum; i++) {
-            vector<int> inner;
-            for (int j = 0; j < n; j++) {
-                if (tra1[j]->X >= queryMatrix[i][0] && tra1[j]->X <= queryMatrix[i][1] &&
-                    tra1[j]->Y >= queryMatrix[i][2] && tra1[j]->Y <= queryMatrix[i][3]) {
-                    perturb++;
-                    break;
-                }
-            }
-            inner.push_back(perturb);
-            for (int j = 0; j < m; j++) {
-                if (tra2[j]->X >= queryMatrix[i][0] && tra2[j]->X <= queryMatrix[i][1] &&
-                    tra2[j]->Y >= queryMatrix[i][2] && tra2[j]->Y <= queryMatrix[i][3]) {
-                    exact++;
-                    break;
-                }
-            }
-            inner.push_back(exact);
-            ret.push_back(inner);
-        }
-    }
-
-    static double calMQE(vector<vector<int>> &mqeV) {
-        int m = mqeV.size();
-        double ret = 0;
-        for (int i = 0; i < m; i++) {
-//            cout << mqeV[i][1] << " " << mqeV[i][0] << endl;
-            ret += abs(mqeV[i][1] - mqeV[i][0]);
-        }
-        return ret / m;
     }
 
     static void tidyTopCVecTime(vector<Triple *> &traj) {
