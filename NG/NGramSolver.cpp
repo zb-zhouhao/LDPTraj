@@ -17,18 +17,19 @@ void NGramSolver::clear() {
 }
 
 void NGramSolver::TestInit() {
-    this->timeSeries = {1, 3, 4, 6, 7, 9, 11, 12, 13, 14};
+//    this->timeSeries = {1, 3, 4, 6, 7, 9, 11, 12, 13, 14};
+    this->timeSeries = {1, 3, 4, 6, 7};
     this->trajs.emplace_back(0, 1);
     this->trajs.emplace_back(2, 0);
     this->trajs.emplace_back(3, 3);
     this->trajs.emplace_back(4, 3);
     this->trajs.emplace_back(3, 4);
 
-    this->trajs.emplace_back(5, 7);
-    this->trajs.emplace_back(6, 8);
-    this->trajs.emplace_back(7, 10);
-    this->trajs.emplace_back(9, 13);
-    this->trajs.emplace_back(15, 14);
+//    this->trajs.emplace_back(5, 7);
+//    this->trajs.emplace_back(6, 8);
+//    this->trajs.emplace_back(7, 10);
+//    this->trajs.emplace_back(9, 13);
+//    this->trajs.emplace_back(14, 14);
 }
 
 void NGramSolver::initPointBigrams() {
@@ -51,8 +52,8 @@ void NGramSolver::initPointBigrams() {
 };
 
 void NGramSolver::initFeasibleBigrams(int i) {
-    double interval = this->timeSeries[i + 1] - this->timeSeries[i];
-    double thres = (double) interval * Util::VELOCITY;
+    double interval = (this->timeSeries[i + 1] - this->timeSeries[i]) / 60.0;
+    double thres = (double) interval * this->theta * Util::SCAL_FAC;
     for (auto b: this->bigrams) {
         if (b.getInternalDis() < thres) {
             this->feasibleBigrams[i].push_back(b);
@@ -175,7 +176,7 @@ vector<int> NGramSolver::solveWithPruning() {
     this->solveLog += "begin to solve\n";
     cout << "begin to solve\n";
     const MPSolver::ResultStatus result_status = solver->Solve();
-    this->solveLog += to_string(objective->Value()) + "\n";
+//    this->solveLog += to_string(objective->Value()) + "\n";
     this->solveLog += "solve complete\n";
     cout << "solve complete\n";
 
@@ -196,7 +197,6 @@ vector<int> NGramSolver::solveWithPruning() {
 void NGramSolver::solve() {
     auto it = this->trajsData.begin();
     double consumeTime = 0;
-    double dtw = 0;
 
     int cnt = 0;
     while (it != this->trajsData.end()) {
@@ -206,6 +206,7 @@ void NGramSolver::solve() {
         vector<Triple *> rTraj;
         vector<Triple *> oriTraj;
         clear();
+
         int innerCnt = 0;
         for (auto tri: it->second) {
             if (innerCnt >= 10) {
@@ -216,6 +217,7 @@ void NGramSolver::solve() {
             oriTraj.emplace_back(tri);
             innerCnt++;
         }
+//        TestInit();
 
         this->feasibleBigrams = vector<vector<Util::Bigram>>(this->timeSeries.size() - 1);
         this->trajBigrams = vector<Util::Bigram>(this->timeSeries.size() - 1);
@@ -235,18 +237,14 @@ void NGramSolver::solve() {
         auto end = chrono::high_resolution_clock::now();
         consumeTime += (double) (chrono::duration_cast<chrono::milliseconds>(end - start).count());
 
-//        dtw += Util::getDTWMetricSingle(oriTraj, rTraj);
-//        cout << "gen user " << it->first << " randomized traj" << endl;
         saveTraj(rTraj, it->first);
         it++;
         cnt++;
+        break;
     }
 
 
     this->solveLog.append(Util::getCurTime() + "[INFO] 算法运行时间: " + to_string(consumeTime / cnt) + " ms\n");
     cout << "算法运行时间: " + to_string(consumeTime / cnt) + " ms\n";
     this->solveLog.append(Util::getCurTime() + "[INFO] finish randomized trajectories\n");
-//    this->solveLog.append(Util::getCurTime() + "[INFO] start DTW algorithm to metric similarity between trajectories\n");
-//    this->solveLog.append(Util::getCurTime() + "[INFO] finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n");
-//    cout << "finish DTW algorithm, DTW value is :" + to_string(dtw / cnt) + "\n";
 }

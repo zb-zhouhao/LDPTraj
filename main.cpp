@@ -35,9 +35,9 @@ int main() {
     const vector<int> splitIndex = param->splitIndex;
 
     // "GEO-I"
-//    const string LDPMethod = "NG";
+    const string LDPMethod = "NG";
 //    const string LDPMethod = "Geo-I";
-    const string LDPMethod = "Local";
+//    const string LDPMethod = "Local";
 //    const string LDPMethod = "KP-E";
 //    const string LDPMethod = "KP-G";
     delete param; param = nullptr;

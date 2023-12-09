@@ -60,19 +60,14 @@ public:
     static constexpr int testCnt = 10;
 
     //自适应读入
+//    static constexpr int GRID_SZ = 30;
     static constexpr int GRID_SZ = 30;
-    static constexpr int X_WIDTH = 1;
-    static constexpr int Y_WIDTH = 1;
 
-    static constexpr int V = 8; //km/h
-    static constexpr double VELOCITY = (V / 3.6);
-
-
+    //grid range [0, xEnd) and [0, yEnd)
     static constexpr int xBegin = 0, yBegin = 0, xEnd = GRID_SZ, yEnd = GRID_SZ;
     static constexpr int xLength = xEnd - xBegin, yLength = yEnd - yBegin;
     static constexpr int region_size = xLength * yLength;
     /* ldp算法参数设置 */
-    static constexpr int UNIT = 1000; //网格单位：1km
     static constexpr double SCAL_FAC = (1.0 / 60);  //km/min
     static constexpr double KEY_RATE = 0.3;
     static constexpr double THRESHOLD = 0.99;
@@ -83,11 +78,6 @@ public:
     struct Point {
         int x, y;
         int index;
-        Point(double xx, double yy) {
-            x = (int)(xx / X_WIDTH);
-            y = (int)(yy / Y_WIDTH);
-            index = x * xLength + y;
-        }
         Point(int x, int y): x(x), y(y) {
             index = x * xLength + y;
         }
